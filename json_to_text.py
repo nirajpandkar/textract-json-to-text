@@ -1,18 +1,18 @@
 from parse import *
 import json
-from numpy import mean, median
-from scipy.stats import mode
-from statistics import stdev
+from statistics import median
 import glob
 import time
 import math
 
-def line_break(responseJson):
+def convert(responseJson):
     """
-    Returns a text file after parsing the Textract JSON
+    Returns a text string after parsing the Textract JSON
 
-    Argument: response JSON that Textracts outputs
-    Return: Text string
+    Argument: 
+        resopnseJson: response JSON that Textracts outputs
+    Return: 
+        text: Text string with appropriate line breaks
     """
     doc = Document(responseJson)        
 
@@ -58,15 +58,14 @@ def line_break(responseJson):
     return text
 
 if __name__ == '__main__':
-    files = glob.glob("Lease_Agreements_Library_Json's/*.json")
+    files = glob.glob("Files/Lease_Agreements_Library_Json's/*.json")
 
     for file_ in files:
-        # file_ = "Lease_Agreements_Library_Json's/Edgar_Alzheon_final.json"
         with open(file_, "r") as infile:
             responseJson = json.load(infile)
         print("Converting file " + file_)
         text = line_break(responseJson)
 
-        with open(file_[:-5] + ".txt2", "w") as outfile:
+        with open(file_[:-5] + ".txt", "w") as outfile:
             outfile.write(text)
         print("Done!")
