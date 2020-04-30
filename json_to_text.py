@@ -64,7 +64,7 @@ if __name__ == '__main__':
         with open(file_, "r") as infile:
             responseJson = json.load(infile)
         print("Converting file " + file_)
-        text = line_break(responseJson)
+        text = convert(responseJson)
 
         with open(file_[:-5] + ".txt", "w") as outfile:
             outfile.write(text)
