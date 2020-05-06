@@ -5,8 +5,10 @@
 ## Usage
 
 ```
+from pprint import pprint
 from json_to_text import convert
 
-text = convert(jsonResponse)
+text, tablesJSON = convert(jsonResponse)
 print(text)
+pprint(tablesJSON)
 ```
