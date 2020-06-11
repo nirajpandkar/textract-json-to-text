@@ -69,6 +69,7 @@ def convert(responseJson):
         prevY = 0
         pagenos = list()
         tablenos = list()
+        len_tablenos = 0
         for line in page.lines:
             topY = line.geometry.boundingBox.top
             bottomY = line.geometry.boundingBox.top + line.geometry.boundingBox.height
@@ -77,15 +78,19 @@ def convert(responseJson):
             
             try:
                 for startY, endY, pageno, tableno in table_coords:
-                    if(bottomY > startY and topY < endY):
+                    if(topY > startY and bottomY < endY):
                         if(pageno not in pagenos and tableno not in tablenos):
-                            text += "\n\n[# PageNo " + str(pageno) + " TableNo " + str(tableno) + " #]\n"
+                            text += "\n\n[# PageNo " + str(pageno) + " TableNo " + str(tableno) + " START #]\n"
                             pagenos.append(pageno)
                             tablenos.append(tableno)
+                        text += "\n" + line.text
                         raise Exception("Skipping the table lines :)")
                 # the ydiff should be greater than the median + std dev
                 # which is set by trial and error (may want to make it dynamic)
                 # then introduce a 2 line breaks to distinguish paragraph
+                if len(tablenos) > len_tablenos:
+                    text += "\n\n[# PageNo " + str(pagenos[-1]) + " TableNo " + str(tablenos[-1]) + " END #]\n"
+                    len_tablenos = len(tablenos)
                 if(round(ydiff,3) > med + 0.002):
                     # print("\n\n" + line.text)
                     text += "\n\n" + line.text
@@ -118,6 +123,6 @@ if __name__ == '__main__':
 
         with open("Tables/" + file_.split("/")[-1][:-5] + "_tables.json", "w") as outfile:
             outfile.write(tableJSON)
-        with open(file_[:-5] + ".txt2", "w") as outfile:
+        with open(file_[:-5] + ".txt3", "w") as outfile:
             outfile.write(text)
         print("Done!")
