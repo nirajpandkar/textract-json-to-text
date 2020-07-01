@@ -67,8 +67,7 @@ def convert(responseJson):
         
         ## For extracting normal text
         prevY = 0
-        pagenos = list()
-        tablenos = list()
+        exists = list()
         for line in page.lines:
             topY = line.geometry.boundingBox.top
             bottomY = line.geometry.boundingBox.top + line.geometry.boundingBox.height
@@ -78,10 +77,9 @@ def convert(responseJson):
             try:
                 for startY, endY, pageno, tableno in table_coords:
                     if(bottomY > startY and topY < endY):
-                        if(pageno not in pagenos and tableno not in tablenos):
+                        if((pageno, tableno) not in exists):
                             text += "\n\n[# PageNo " + str(pageno) + " TableNo " + str(tableno) + " #]\n"
-                            pagenos.append(pageno)
-                            tablenos.append(tableno)
+                            exists.append((pageno, tableno))
                         raise Exception("Skipping the table lines :)")
                 # the ydiff should be greater than the median + std dev
                 # which is set by trial and error (may want to make it dynamic)
@@ -110,6 +108,7 @@ if __name__ == '__main__':
     files = glob.glob("Files/Lease_Agreements_Library_Json's/*.json")
 
     for file_ in files:
+        file_ = "Files/Lease_Agreements_Library_Json's/file_1725_final.json"
         with open(file_, "r") as infile:
             responseJson = json.load(infile)
         print("Converting file " + file_)
@@ -121,3 +120,4 @@ if __name__ == '__main__':
         with open(file_[:-5] + ".txt2", "w") as outfile:
             outfile.write(text)
         print("Done!")
+        break
