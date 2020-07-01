@@ -112,17 +112,26 @@ def convert(responseJson):
     return text, jsonTables
 
 if __name__ == '__main__':
-    files = glob.glob("Files/Lease_Agreements_Library_Json's/*.json")
-
+    files = glob.glob("Files/GSTFiles/*.json")
+    tables_folder = "OutputTables"
     for file_ in files:
+        filename = file_.split("/")[-1][:-5]
         with open(file_, "r") as infile:
             responseJson = json.load(infile)
         print("Converting file " + file_)
 
         text, tableJSON = convert(responseJson)
-
         with open("Tables/" + file_.split("/")[-1][:-5] + "_tables.json", "w") as outfile:
             outfile.write(tableJSON)
-        with open(file_[:-5] + ".txt3", "w") as outfile:
+        with open(file_[:-5] + ".txt", "w") as outfile:
             outfile.write(text)
-        print("Done!")
+        print("Done!") 
+
+        # Save the tables
+        # excel_filepath = os.path.join(tables_folder, filename + ".xlsx")
+        # with pd.ExcelWriter(excel_filepath, engine='xlsxwriter') as writer: 
+        #     for i, df_ in enumerate(tables_df):   
+        #         df_.to_excel(writer, "Table " + str(i)) 
+        #     writer.save()
+
+        
