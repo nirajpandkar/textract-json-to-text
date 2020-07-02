@@ -67,8 +67,7 @@ def convert(responseJson):
         
         ## For extracting normal text
         prevY = 0
-        pagenos = list()
-        tablenos = list()
+        exists = list()
         len_tablenos = 0
         for line in page.lines:
             topY = line.geometry.boundingBox.top
@@ -78,19 +77,19 @@ def convert(responseJson):
             
             try:
                 for startY, endY, pageno, tableno in table_coords:
-                    if(topY > startY and bottomY < endY):
-                        if(pageno not in pagenos and tableno not in tablenos):
+                    if(topY > startY-0.002 and bottomY < endY+0.002):
+                        if((pageno, tableno) not in exists):
                             text += "\n\n[# PageNo " + str(pageno) + " TableNo " + str(tableno) + " START #]\n"
-                            pagenos.append(pageno)
-                            tablenos.append(tableno)
+                            exists.append((pageno, tableno))
                         text += "\n" + line.text
                         raise Exception("Skipping the table lines :)")
                 # the ydiff should be greater than the median + std dev
                 # which is set by trial and error (may want to make it dynamic)
                 # then introduce a 2 line breaks to distinguish paragraph
-                if len(tablenos) > len_tablenos:
-                    text += "\n\n[# PageNo " + str(pagenos[-1]) + " TableNo " + str(tablenos[-1]) + " END #]\n"
-                    len_tablenos = len(tablenos)
+                if len(exists) > len_tablenos:
+                    text += "\n\n[# PageNo " + str(exists[-1][0]) + " TableNo " + str(exists[-1][1]) + " END #]\n"
+                    len_tablenos = len(exists)
+                
                 if(round(ydiff,3) > med + 0.002):
                     # print("\n\n" + line.text)
                     text += "\n\n" + line.text
