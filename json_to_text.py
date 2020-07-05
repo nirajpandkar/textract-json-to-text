@@ -5,7 +5,7 @@ import glob
 import time
 import math
 from pprint import pprint
-
+import traceback
 def convert(responseJson):
     """
     Returns a text string after parsing the Textract JSON
@@ -64,25 +64,33 @@ def convert(responseJson):
                                              "Width": cell.geometry.boundingBox.width}))
                 tbl["Table"].append(rows)
             tables["tables"].append(tbl)
-        
+
         ## For extracting normal text
         prevY = 0
         exists = list()
         len_tablenos = 0
-        for line in page.lines:
+        total_lines = len(page.lines)
+
+        for lineno, line in enumerate(page.lines):
             topY = line.geometry.boundingBox.top
             bottomY = line.geometry.boundingBox.top + line.geometry.boundingBox.height
             ydiff = line.geometry.polygon[-1].y - prevY
-            # print("Diff: {}".format(ydiff))
+            # #print("Diff: {}".format(ydiff))
             
-            try:
+            try:           
                 for startY, endY, pageno, tableno in table_coords:
-                    if(topY > startY-0.002 and bottomY < endY+0.002):
+                    if(topY > startY and bottomY < endY):
                         if((pageno, tableno) not in exists):
                             text += "\n\n[# PageNo " + str(pageno) + " TableNo " + str(tableno) + " START #]\n"
                             exists.append((pageno, tableno))
                         text += "\n" + line.text
+                        
+                        # If the line is a "table line" AND it's the last line on that page, insert an END marker
+                        # Needed to do this because it wouldn't go past this stage to the next if block; credit to it being the last line of that page.
+                        if(lineno == total_lines - 1):
+                            text += "\n\n[# PageNo " + str(pageno) + " TableNo " + str(tableno) + " END #]\n"
                         raise Exception("Skipping the table lines :)")
+
                 # the ydiff should be greater than the median + std dev
                 # which is set by trial and error (may want to make it dynamic)
                 # then introduce a 2 line breaks to distinguish paragraph
@@ -106,6 +114,7 @@ def convert(responseJson):
                     text += "\n" + line.text
             except:
                 pass
+                # print(traceback.format_exc())
             prevY = line.geometry.polygon[-1].y
     jsonTables = json.dumps(tables)
     return text, jsonTables
@@ -114,6 +123,7 @@ if __name__ == '__main__':
     files = glob.glob("Files/GSTFiles/*.json")
     tables_folder = "OutputTables"
     for file_ in files:
+        file_ = "Files/GSTFiles/file_1650_final.json"
         filename = file_.split("/")[-1][:-5]
         with open(file_, "r") as infile:
             responseJson = json.load(infile)
@@ -125,6 +135,7 @@ if __name__ == '__main__':
         with open(file_[:-5] + ".txt", "w") as outfile:
             outfile.write(text)
         print("Done!") 
+        break
 
         # Save the tables
         # excel_filepath = os.path.join(tables_folder, filename + ".xlsx")
